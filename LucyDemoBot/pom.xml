@@ -8,6 +8,7 @@
 		<version>3.0.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>io.proj3ct</groupId>
 	<artifactId>LucyDemoBot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -17,6 +18,7 @@
 		<java.version>17</java.version>
 		<telegram.version>6.5.0</telegram.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.telegram</groupId>
@@ -39,6 +41,7 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -48,6 +51,12 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.32</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vdurmont</groupId>
+			<artifactId>emoji-java</artifactId>
+			<version>5.1.1</version>
 		</dependency>
 
 	</dependencies>
