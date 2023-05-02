@@ -8,6 +8,8 @@ public class LucyDemoBotApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LucyDemoBotApplication.class, args);
+
+
 	}
 
 }

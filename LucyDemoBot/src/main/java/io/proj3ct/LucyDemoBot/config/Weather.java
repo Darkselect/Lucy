@@ -1,5 +1,6 @@
 package io.proj3ct.LucyDemoBot.config;
 
+import com.vdurmont.emoji.EmojiParser;
 import io.proj3ct.LucyDemoBot.model.WeatherModel;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,15 +15,15 @@ public class Weather {
 
     public static String getWeather(String message, WeatherModel model) throws IOException {
         //Нам нужно послать запрос к нашему API
-        URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=" + message + "London&units=metric&appid=636153360e46fa961782ac797cd02f24");
+        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + message + "&units=metric&appid=636153360e46fa961782ac797cd02f24");
 
         Scanner in = new Scanner((InputStream) url.getContent());
-        String result = "";
+        StringBuilder result = new StringBuilder();
         while (in.hasNext()) {
-            result += in.nextLine();
+            result.append(in.nextLine());
         }
 
-        JSONObject object = new JSONObject(result.toString());
+        JSONObject object = new JSONObject(result.toString().toString());
         model.setName(object.getString("name"));
 
         JSONObject main = object.getJSONObject("main");
@@ -36,10 +37,13 @@ public class Weather {
             model.setMain((String) obj.get("main"));
         }
 
-        return "Город: " + model.getName() + "\n" +
-                "Температура: " + model.getTemp() + "C" + "\n" +
-                "Влажность:" + model.getHumidity() + "%" + "\n" +
-                "Main: " + model.getMain() + "\n" +
+        return "Город: " + model.getName() + " " + EmojiParser.parseToUnicode(":city_sunrise:") + "\n" +
+                "Температура : " + model.getTemp() + " °C" + " " + EmojiParser.parseToUnicode(":temperature:") + "\n" +
+                "Влажность: " + model.getHumidity() + "%" + " " + EmojiParser.parseToUnicode(":droplet:") + "\n" +
+                "Какая погодка : " + model.getMain() + "\n" +
                 "http://openweathermap.org/img/w/" + model.getIcon() + ".png";
+
+
+
     }
 }

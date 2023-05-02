@@ -18,10 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
@@ -46,7 +43,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             "Команда /mydata позволяет Вам посмотреть все ваши личные данные\n\n"+
             "Команда /deletedata позволяет Вам удалалить все ваши личные данные\n\n" +
             "Команда /help, открывает список всех доступных команд и функций\n\n" +
-            "Команда /settings, позволяет Вам отредактировать Ваши личные данные";
+            "Команда /settings, позволяет Вам отредактировать Ваши личные данные\n\n" +
+            "Так же вы моежете ввести в строку город и посмотреть погоду";
 
     static final String YES_BUTTON = "YES_BUTTON";
     static final String NO_BUTTON = "NO_BUTTON";
@@ -81,17 +79,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     // Самый главный метод, именно здесь происходит взаимодействие с пользователем
-    @Override
+   /* @Override
     public void onUpdateReceived(Update update) {
 
         WeatherModel weatherModel = new WeatherModel();
         Message message = update.getMessage();
 
-        //Проверка есть ли текст от пользователя, дабы не получить NullPointerException, убеждаемся что нам что-то прислали и там есть текс
+        //Проверка есть ли текст от пользователя, дабы не получить NullPointerException, убеждаемся что нам что-то прислали и там есть текст
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
 
-            //Чтобы бот нам написать, ему необходимо знать чат ID это ID которое индифицирует пользователя, бот может общаться одновременно множество людей, чтобы он знал, что кому отправлять
+            //Чтобы бот нам написал, ему необходимо знать чат ID это ID которое индифицирует пользователя, бот может общаться одновременно множество людей, чтобы он знал, что кому отправлять
             long chatId = update.getMessage().getChatId();
 
             //Рассылка всем пользователям определенного сообщения, которое задается вручную
@@ -103,10 +101,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
 
 
-            }
-
-            else {
-
+            } else {
 
                 switch (messageText) {
                     case "/start":
@@ -123,16 +118,19 @@ public class TelegramBot extends TelegramLongPollingBot {
                         register(chatId);
                         break;
 
-                    case "Погода":
+
+                    case "Погода": {
                         try {
                             sendMessage(chatId, "Напишите город");
                             sendMessage(chatId, Weather.getWeather(message.getText(), weatherModel));
-
                         } catch (IOException e) {
-                            sendMessage(chatId, "Город не найден!");
+                            e.printStackTrace();
+                            sendMessage(chatId, "Исключение результата");
                         }
-                        break;
 
+                        break;
+                    }
+//
                     default:
                     {
                         sendMessage(chatId, "Извините данная команда не поддерживается");
@@ -160,7 +158,86 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     }
+*/
+    @Override
+    public void onUpdateReceived(Update update) {
 
+        //Проверка есть ли текст от пользователя, дабы не получить NullPointerException, убеждаемся что нам что-то прислали и там есть текст
+        if (update.hasMessage() && update.getMessage().hasText()) {
+
+            String messageText = update.getMessage().getText();
+
+            //Чтобы бот нам написал, ему необходимо знать чат ID это ID которое индифицирует пользователя, бот может общаться одновременно множество людей, чтобы он знал, что кому отправлять
+            long chatId = update.getMessage().getChatId();
+
+
+
+            //Рассылка всем пользователям определенного сообщения, которое задается вручную
+            if (messageText.contains("/send") && config.getOwnerId() == chatId) {
+                var textToSend = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
+                var users = userRepository.findAll();
+                for (User user : users) {
+                    prepareAndMessage(user.getChatId(), textToSend);
+                }
+
+                return ;
+            }
+
+        }
+
+
+            WeatherModel model = new WeatherModel();
+            Message message = update.getMessage();
+
+
+            if (message != null && message.hasText()) {
+                switch (message.getText()) {
+                    case "/start":
+                        registerUser(update.getMessage());
+                        startCommandReceived(message.getChatId(), update.getMessage().getChat().getFirstName());
+                        break;
+
+                    case "/help":
+                        prepareAndMessage(message.getChatId(), HELP_TEXT);
+                        break;
+
+                    case "/register":
+                        register(message.getChatId());
+                        break;
+
+                    case "/setting":
+                        sendMessage(message.getChatId(), "Что будем настраивать?");
+                        break;
+
+                    default:
+                        try {
+                            sendMessage(message.getChatId(), Weather.getWeather(message.getText(), model));
+                        } catch (IOException e) {
+                            sendMessage(message.getChatId(), "Извините данная команда не поддерживается");
+                        }
+
+
+            }
+        } else if (update.hasCallbackQuery()) {
+                String callBackData = update.getCallbackQuery().getData();
+                long messageId = update.getCallbackQuery().getMessage().getMessageId();
+                long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+                if (callBackData.equals(YES_BUTTON)) {
+                    String text = "Вы нажали кнопку: \"Да\"";
+                    executeEditMessageText(text, chatId, messageId);
+
+                }
+                else if (callBackData.equals(NO_BUTTON)) {
+                    String text = "Вы нажали кнопку: \"Нет\"";
+                    executeEditMessageText(text, chatId, messageId);
+                }
+            }
+
+
+
+
+    }
 
 
 
@@ -244,8 +321,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
 
+
+
         //Клавиатура для ответа
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+      /*
+       ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -260,9 +340,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         keyboardRows.add(row);
 
+
         keyboardMarkup.setKeyboard(keyboardRows);
 
-        message.setReplyMarkup(keyboardMarkup);
+        message.setReplyMarkup(keyboardMarkup);.
+
+       */
 
         executeMessage(message);
 
@@ -295,4 +378,5 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setText(textToSend);
         executeMessage(message);
     }
+
 }

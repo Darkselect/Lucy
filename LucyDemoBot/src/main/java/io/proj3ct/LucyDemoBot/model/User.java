@@ -10,7 +10,7 @@ public class User  {
 
     // тот ид который телеграмм присваивает каждому пользователю
     @Id
-    private Long  chatId;
+    private Long chatId;
 
     private String firstName;
 
